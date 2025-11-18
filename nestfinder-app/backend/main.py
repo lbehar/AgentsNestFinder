@@ -130,6 +130,129 @@ def ensure_unique_slug(base_slug: str, existing_slugs: set) -> str:
         counter += 1
     return slug
 
+def seed_demo_properties():
+    """Seed demo properties for presentation if database is empty."""
+    if len(properties_db) > 0:
+        return  # Don't seed if properties already exist
+    
+    demo_properties = [
+        {
+            "title": "Modern Studio in Covent Garden",
+            "area": "Covent Garden",
+            "address": "45 Long Acre",
+            "postcode": "WC2E 7BD",
+            "rent": 1800.0,
+            "public_link": "https://spareroom.co.uk/flatshare/london/covent_garden",
+            "status": "active"
+        },
+        {
+            "title": "Bright 1-Bed Flat in Soho",
+            "area": "Soho",
+            "address": "12 Greek Street",
+            "postcode": "W1D 4HT",
+            "rent": 2200.0,
+            "public_link": "https://spareroom.co.uk/flatshare/london/soho",
+            "status": "active"
+        },
+        {
+            "title": "City Apartment near Bank",
+            "area": "City of London",
+            "address": "8 Threadneedle Street",
+            "postcode": "EC2A 3AR",
+            "rent": 2000.0,
+            "public_link": "https://spareroom.co.uk/flatshare/london/city",
+            "status": "active"
+        },
+        {
+            "title": "Spacious Flat near Paddington Station",
+            "area": "Paddington",
+            "address": "23 Praed Street",
+            "postcode": "W2 4DX",
+            "rent": 1900.0,
+            "public_link": "https://spareroom.co.uk/flatshare/london/paddington",
+            "status": "active"
+        },
+        {
+            "title": "Victorian House in Notting Hill",
+            "area": "Notting Hill",
+            "address": "15 Portobello Road",
+            "postcode": "W11 2BQ",
+            "rent": 2500.0,
+            "public_link": "https://spareroom.co.uk/flatshare/london/notting_hill",
+            "status": "active"
+        },
+        {
+            "title": "Elegant Flat in Kensington",
+            "area": "Kensington",
+            "address": "42 Kensington High Street",
+            "postcode": "W8 5AB",
+            "rent": 2400.0,
+            "public_link": "https://spareroom.co.uk/flatshare/london/kensington",
+            "status": "active"
+        },
+        {
+            "title": "Loft Apartment in Shoreditch",
+            "area": "Shoreditch",
+            "address": "18 Rivington Street",
+            "postcode": "E1 6AN",
+            "rent": 1700.0,
+            "public_link": "https://spareroom.co.uk/flatshare/london/shoreditch",
+            "status": "active"
+        },
+        {
+            "title": "Modern Penthouse in Canary Wharf",
+            "area": "Canary Wharf",
+            "address": "25 Canada Square",
+            "postcode": "E14 5AB",
+            "rent": 2300.0,
+            "public_link": "https://spareroom.co.uk/flatshare/london/canary_wharf",
+            "status": "active"
+        },
+        {
+            "title": "Family Home in Kingston",
+            "area": "Kingston",
+            "address": "12 High Street",
+            "postcode": "KT1 1AE",
+            "rent": 1500.0,
+            "public_link": "https://spareroom.co.uk/flatshare/london/kingston",
+            "status": "active"
+        },
+    ]
+    
+    agency = agencies_db.get(DEFAULT_AGENCY_ID, {})
+    base_postcode = agency.get("base_postcode", "W2 4DX")
+    
+    for idx, prop_data in enumerate(demo_properties, start=1):
+        # Generate unique slug
+        base_slug = generate_slug(prop_data["title"])
+        existing_slugs = {p.get("slug") for p in properties_db.values() if p.get("slug")}
+        slug = ensure_unique_slug(base_slug, existing_slugs)
+        
+        # Geocode property coordinates
+        latitude, longitude = travel_time.geocode_property(
+            prop_data["address"],
+            prop_data["postcode"],
+            base_postcode
+        )
+        
+        properties_db[idx] = {
+            "id": idx,
+            "title": prop_data["title"],
+            "area": prop_data["area"],
+            "address": prop_data["address"],
+            "postcode": prop_data["postcode"],
+            "rent": prop_data["rent"],
+            "public_link": prop_data["public_link"],
+            "status": prop_data["status"],
+            "slug": slug,
+            "latitude": latitude,
+            "longitude": longitude,
+            "agency_id": DEFAULT_AGENCY_ID,
+            "source": "demo",
+        }
+    
+    print(f"✅ Seeded {len(demo_properties)} demo properties")
+
 # Agency routes
 @app.get("/api/agency")
 async def get_agency():
@@ -603,6 +726,13 @@ async def get_public_property(agency_slug: str, property_slug: str):
 async def root():
     return {"message": "NestFinder API", "version": "1.0.0"}
 
+@app.on_event("startup")
+async def startup_event():
+    """Seed demo properties on startup if database is empty."""
+    seed_demo_properties()
+
 if __name__ == "__main__":
+    # Seed demo properties before starting server
+    seed_demo_properties()
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

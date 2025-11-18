@@ -56,6 +56,9 @@ POSTCODE_PREFIX_COORDS: Dict[str, Tuple[float, float]] = {
     "EC2": (51.520, -0.085),  # City
     "EC3": (51.515, -0.080),  # City
     "EC4": (51.510, -0.095),  # Fleet Street
+    "WC2": (51.512, -0.120),  # Covent Garden
+    "KT1": (51.410, -0.300),  # Kingston upon Thames
+    "KT2": (51.415, -0.295),  # Kingston upon Thames (extended)
 }
 
 
@@ -114,8 +117,18 @@ def get_base_travel_time(from_postcode: str, to_postcode: str) -> int:
     if from_postcode == to_postcode:
         return 0
     
+    # Try full postcode first
     from_coords = POSTCODE_COORDS.get(from_postcode)
     to_coords = POSTCODE_COORDS.get(to_postcode)
+    
+    # If not found, try postcode prefix
+    if not from_coords:
+        from_prefix = extract_postcode_prefix(from_postcode)
+        from_coords = POSTCODE_PREFIX_COORDS.get(from_prefix)
+    
+    if not to_coords:
+        to_prefix = extract_postcode_prefix(to_postcode)
+        to_coords = POSTCODE_PREFIX_COORDS.get(to_prefix)
     
     if not from_coords or not to_coords:
         return 30  # Default fallback
