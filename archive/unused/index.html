@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NestFinder for Agents</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="agent-dashboard.css">
+</head>
+<body class="agent-dashboard-body">
+    <div class="dashboard-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h1>🏠 NestFinder</h1>
+                <p class="sidebar-subtitle">Agent Dashboard</p>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#" class="nav-item active" data-view="dashboard">📊 Dashboard</a></li>
+                <li><a href="#" class="nav-item" data-view="properties">🏘️ Properties</a></li>
+                <li><a href="#" class="nav-item" data-view="availability">📅 Availability</a></li>
+                <li><a href="#" class="nav-item" data-view="analytics">📈 Analytics</a></li>
+            </ul>
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <strong id="agent-name-display">Agent Alex</strong>
+                    <span class="user-role">Pro Plan</span>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Dashboard View -->
+            <div id="dashboard-view" class="view active">
+                <div class="view-header">
+                    <h2>Today's Schedule</h2>
+                    <div class="header-actions">
+                        <label class="travel-tolerance-label">
+                            Travel Tolerance:
+                            <input type="range" id="travel-tolerance" min="10" max="30" value="15" step="5">
+                            <span id="travel-tolerance-value">15</span> min
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Smart Summary -->
+                <div class="smart-summary">
+                    <div class="summary-card">
+                        <div class="summary-icon">📅</div>
+                        <div class="summary-content">
+                            <div class="summary-value" id="today-viewings-count">0</div>
+                            <div class="summary-label">Viewings Today</div>
+                            <div class="summary-detail" id="today-route">No viewings scheduled</div>
+                        </div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-icon">⏱️</div>
+                        <div class="summary-content">
+                            <div class="summary-value" id="avg-travel-time">--</div>
+                            <div class="summary-label">Avg Travel Time</div>
+                        </div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-icon">⏳</div>
+                        <div class="summary-content">
+                            <div class="summary-value" id="pending-count">0</div>
+                            <div class="summary-label">Pending Requests</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabs -->
+                <div class="tabs">
+                    <button class="tab-btn active" data-tab="pending">Pending</button>
+                    <button class="tab-btn" data-tab="confirmed">Confirmed</button>
+                    <button class="tab-btn" data-tab="declined">Declined</button>
+                    <button class="tab-btn" data-tab="past">Past</button>
+                </div>
+
+                <!-- Tab Content -->
+                <div class="tab-content">
+                    <div id="pending-tab" class="tab-panel active">
+                        <div id="pending-requests-list" class="requests-list">
+                            <p class="info-text">No pending requests</p>
+                        </div>
+                    </div>
+                    <div id="confirmed-tab" class="tab-panel">
+                        <div class="calendar-view">
+                            <h3>Daily Schedule (09:00 - 18:00)</h3>
+                            <div id="agent-timeline" class="timeline-container"></div>
+                        </div>
+                    </div>
+                    <div id="declined-tab" class="tab-panel">
+                        <div id="declined-requests-list" class="requests-list">
+                            <p class="info-text">No declined requests</p>
+                        </div>
+                    </div>
+                    <div id="past-tab" class="tab-panel">
+                        <div id="past-viewings-list" class="requests-list">
+                            <p class="info-text">No past viewings</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Properties View -->
+            <div id="properties-view" class="view">
+                <div class="view-header">
+                    <h2>My Properties</h2>
+                    <button class="btn-primary" onclick="showAddPropertyModal()">+ Add Property</button>
+                </div>
+                <div id="properties-grid" class="properties-grid">
+                    <!-- Properties will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Availability View -->
+            <div id="availability-view" class="view">
+                <div class="view-header">
+                    <h2>Availability Settings</h2>
+                </div>
+                <div class="availability-settings">
+                    <div class="setting-section">
+                        <h3>Weekly Recurring Slots</h3>
+                        <div class="recurring-slots">
+                            <label>
+                                <input type="checkbox" checked> Monday - Saturday
+                            </label>
+                            <div class="time-range">
+                                <input type="time" value="09:00"> to <input type="time" value="18:00">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="setting-section">
+                        <h3>Manual Blocks</h3>
+                        <button class="btn-secondary" onclick="addBlock()">+ Add Block</button>
+                        <div id="manual-blocks"></div>
+                    </div>
+                    <div class="setting-section">
+                        <h3>Calendar Sync</h3>
+                        <button class="btn-secondary">Sync with Google Calendar</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics View -->
+            <div id="analytics-view" class="view">
+                <div class="view-header">
+                    <h2>Analytics</h2>
+                </div>
+                <div class="analytics-content">
+                    <div class="analytics-card">
+                        <h3>Viewing Conversion Rate</h3>
+                        <div class="analytics-value">--</div>
+                        <p>Requests → Confirmed</p>
+                    </div>
+                    <div class="analytics-card">
+                        <h3>Travel Time Saved</h3>
+                        <div class="analytics-value">--</div>
+                        <p>vs random scheduling</p>
+                    </div>
+                    <div class="analytics-card">
+                        <h3>Popular Times</h3>
+                        <div class="analytics-value">--</div>
+                        <p>Most requested slots</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="notification-toast" class="notification-toast hidden">
+        <span id="notification-text"></span>
+        <button id="notification-close">×</button>
+    </div>
+
+    <!-- Property Detail Modal -->
+    <div id="property-modal" class="modal hidden">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closePropertyModal()">&times;</span>
+            <h2 id="modal-property-name">Property Name</h2>
+            <div class="modal-section">
+                <h3>Booking Link</h3>
+                <div class="link-generator">
+                    <input type="text" id="booking-link" readonly>
+                    <button class="btn-copy" onclick="copyBookingLink()">Copy</button>
+                </div>
+                <p class="help-text">Paste this link in your SpareRoom ad</p>
+            </div>
+            <div class="modal-section">
+                <h3>Property Settings</h3>
+                <label>Max Viewings per Day: <input type="number" id="max-viewings" value="5" min="1"></label>
+            </div>
+        </div>
+    </div>
+
+    <script src="scheduler.js"></script>
+    <script src="agent-dashboard.js"></script>
+</body>
+</html>
+
