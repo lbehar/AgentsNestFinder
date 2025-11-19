@@ -126,7 +126,7 @@ export default function MasterAgentLinkPage() {
                 Select Property *
               </label>
               <select
-                value={selectedProperty?.id.toString() || ''}
+                value=""
                 onChange={(e) => handlePropertySelect(e.target.value)}
                 className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 text-slate-900"
                 required
