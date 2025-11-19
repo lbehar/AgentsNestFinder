@@ -9,6 +9,7 @@ interface Viewing {
   tenant_name: string;
   tenant_email: string;
   tenant_phone: string;
+  property_id: number;
   property_title: string;
   property_postcode: string;
   requested_time: string;
