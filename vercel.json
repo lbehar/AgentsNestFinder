@@ -1,7 +1,4 @@
 {
-  "buildCommand": "cd nestfinder-app && npm install && npm run build",
-  "outputDirectory": "nestfinder-app/.next",
-  "installCommand": "cd nestfinder-app && npm install",
   "framework": "nextjs",
   "rootDirectory": "nestfinder-app"
 }
