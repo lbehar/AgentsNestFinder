@@ -12,6 +12,7 @@ interface Viewing {
   property_title: string;
   property_postcode: string;
   requested_time: string;
+  requested_date?: string;
   status: string;
   move_in_date?: string;
   occupants?: number;
@@ -140,7 +141,17 @@ export default function ViewingRequestsScreen({ onToast }: ViewingRequestsScreen
   const confirmedCount = viewings.filter(v => v.status === 'confirmed').length;
   const todayViewings = viewings.filter(v => {
     if (v.status !== 'confirmed') return false;
-    // For MVP, assume confirmed viewings are for today
+    // Check if the requested date is today
+    if (v.requested_date) {
+      const today = new Date();
+      const requestedDate = new Date(v.requested_date);
+      return (
+        today.getFullYear() === requestedDate.getFullYear() &&
+        today.getMonth() === requestedDate.getMonth() &&
+        today.getDate() === requestedDate.getDate()
+      );
+    }
+    // Fallback: if no requested_date, assume it's for today (backward compatibility)
     return true;
   });
 
@@ -217,7 +228,7 @@ export default function ViewingRequestsScreen({ onToast }: ViewingRequestsScreen
 
                   <div className="mb-4">
                     <div className="flex items-center gap-2 mb-1">
-                      <p className="text-sm font-medium text-slate-700">Requested Time</p>
+                      <p className="text-sm font-medium text-slate-700">Requested Date & Time</p>
                       {viewing.status === 'pending' && feasibilityStatuses[viewing.id] && (
                         <span
                           className="px-2 py-0.5 text-xs font-medium rounded-full text-white"
@@ -227,6 +238,16 @@ export default function ViewingRequestsScreen({ onToast }: ViewingRequestsScreen
                         </span>
                       )}
                     </div>
+                    {viewing.requested_date && (
+                      <p className="text-base font-semibold text-slate-900 mb-1">
+                        {new Date(viewing.requested_date).toLocaleDateString('en-GB', { 
+                          weekday: 'long', 
+                          year: 'numeric', 
+                          month: 'long', 
+                          day: 'numeric' 
+                        })}
+                      </p>
+                    )}
                     <p className="text-lg font-semibold text-slate-900">{viewing.requested_time}</p>
                     {viewing.suggested_time && (
                       <p className="text-sm text-blue-600 mt-1">

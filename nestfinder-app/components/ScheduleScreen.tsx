@@ -8,6 +8,7 @@ interface Viewing {
   property_title: string;
   property_postcode: string;
   requested_time: string;
+  requested_date?: string;
   confirmed_time?: string;
   status: string;
   created_at?: string;
@@ -77,8 +78,15 @@ export default function ScheduleScreen() {
     
     return viewings
       .filter((viewing) => {
-        // For MVP, assume confirmed viewings are for today
-        return viewing.status === 'confirmed';
+        if (viewing.status !== 'confirmed') return false;
+        // Check if the requested date is today
+        if (viewing.requested_date) {
+          const requestedDate = new Date(viewing.requested_date);
+          requestedDate.setHours(0, 0, 0, 0);
+          return requestedDate.getTime() === today.getTime();
+        }
+        // Fallback: if no requested_date, assume it's for today (backward compatibility)
+        return true;
       })
       .sort((a, b) => {
         const timeA = a.confirmed_time || a.requested_time;

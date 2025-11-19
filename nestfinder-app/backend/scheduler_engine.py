@@ -255,10 +255,24 @@ def generate_slots(
         )
     ]
     
-    # STEP 4: Apply travel-time feasibility
+    # STEP 4: Filter out past times if target_date is today
+    from datetime import datetime
+    today = datetime.now().date()
+    now = datetime.now()
+    current_time_minutes = now.hour * 60 + now.minute
+    
+    slots_after_time_filter = slots_after_conflicts
+    if target_date == today:
+        # Filter out slots that are in the past (with 30 min buffer)
+        slots_after_time_filter = [
+            slot for slot in slots_after_conflicts
+            if parse_time(slot) > current_time_minutes + 30
+        ]
+    
+    # STEP 5: Apply travel-time feasibility
     # Filter out conflicts, keep ok and tight
     final_slots = []
-    for slot in slots_after_conflicts:
+    for slot in slots_after_time_filter:
         feasibility = calculate_travel_feasibility(
             slot,
             property_id,
@@ -278,6 +292,6 @@ def generate_slots(
                 slot_result["travel_minutes"] = feasibility["travel_minutes"]
             final_slots.append(slot_result)
     
-    # STEP 5: Return only feasible + tight slots
+    # STEP 6: Return only feasible + tight slots
     return final_slots
 

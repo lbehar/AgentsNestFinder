@@ -9,6 +9,7 @@ interface Viewing {
   property_title: string;
   property_postcode: string;
   requested_time: string;
+  requested_date?: string;
   status: 'pending' | 'confirmed' | 'declined';
 }
 
@@ -105,7 +106,15 @@ export default function ViewingsTab({ onToast }: ViewingsTabProps) {
                       <div>
                         <div className="font-medium text-slate-900">{viewing.tenant_name}</div>
                         <div className="text-sm text-slate-500">
-                          {viewing.property_postcode} • {viewing.requested_time}
+                          {viewing.property_postcode}
+                          {viewing.requested_date && (
+                            <> • {new Date(viewing.requested_date).toLocaleDateString('en-GB', { 
+                              weekday: 'short', 
+                              month: 'short', 
+                              day: 'numeric' 
+                            })}</>
+                          )}
+                          {' • '}{viewing.requested_time}
                         </div>
                       </div>
                       <span

@@ -256,7 +256,7 @@ export default function AvailabilityTab({ onToast }: AvailabilityTabProps) {
                     title="Delete blockout"
                   >
                     🗑️
-                  </button>
+        </button>
                 </div>
               ))}
             </div>

@@ -90,6 +90,7 @@ class ViewingCreate(BaseModel):
     tenant_phone: str
     property_id: int
     requested_time: str
+    requested_date: Optional[date] = None
     move_in_date: Optional[date] = None
     occupants: Optional[int] = None
     rent_budget: Optional[float] = None
@@ -529,6 +530,41 @@ async def create_viewing(viewing_data: ViewingCreate):
     if not property or property.get("agency_id") != DEFAULT_AGENCY_ID:
         raise HTTPException(status_code=404, detail="Property not found")
     
+    # Validate that the requested date/time is not in the past
+    if viewing_data.requested_date:
+        requested_date = viewing_data.requested_date
+        today = datetime.now().date()
+        now = datetime.now()
+        
+        # Check if date is in the past
+        if requested_date < today:
+            raise HTTPException(
+                status_code=400, 
+                detail="Cannot book a viewing in the past. Please select a future date."
+            )
+        
+        # If date is today, check if time is in the past
+        if requested_date == today:
+            # Parse requested time
+            try:
+                time_parts = viewing_data.requested_time.split(':')
+                requested_hour = int(time_parts[0])
+                requested_minute = int(time_parts[1])
+                requested_time_minutes = requested_hour * 60 + requested_minute
+                current_time_minutes = now.hour * 60 + now.minute
+                
+                # Reject if time is in the past (with 30 min buffer)
+                if requested_time_minutes <= current_time_minutes + 30:
+                    raise HTTPException(
+                        status_code=400,
+                        detail="Cannot book a viewing in the past. Please select a time at least 30 minutes in the future."
+                    )
+            except (ValueError, IndexError):
+                raise HTTPException(
+                    status_code=400,
+                    detail="Invalid time format. Use HH:MM format."
+                )
+    
     viewing_id = len(viewings_db) + 1
     viewings_db[viewing_id] = {
         "id": viewing_id,
@@ -537,6 +573,7 @@ async def create_viewing(viewing_data: ViewingCreate):
         "tenant_phone": viewing_data.tenant_phone,
         "property_id": viewing_data.property_id,
         "requested_time": viewing_data.requested_time,
+        "requested_date": viewing_data.requested_date.isoformat() if viewing_data.requested_date else None,
         "move_in_date": viewing_data.move_in_date.isoformat() if viewing_data.move_in_date else None,
         "occupants": viewing_data.occupants,
         "rent_budget": viewing_data.rent_budget,

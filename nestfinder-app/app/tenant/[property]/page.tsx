@@ -85,7 +85,27 @@ export default function TenantBookingPage() {
         params: { date }
       });
       console.log('Available slots response:', slotsResponse.data);
-      setAvailableSlots(slotsResponse.data.slots || []);
+      
+      // Filter out past time slots if the selected date is today
+      const today = new Date();
+      const todayStr = today.toISOString().split('T')[0];
+      let filteredSlots = slotsResponse.data.slots || [];
+      
+      if (date === todayStr) {
+        const now = new Date();
+        const currentHour = now.getHours();
+        const currentMinute = now.getMinutes();
+        const currentTimeMinutes = currentHour * 60 + currentMinute;
+        
+        filteredSlots = filteredSlots.filter((slot: {time: string}) => {
+          const [hour, minute] = slot.time.split(':').map(Number);
+          const slotTimeMinutes = hour * 60 + minute;
+          // Only show slots that are at least 30 minutes in the future
+          return slotTimeMinutes > currentTimeMinutes + 30;
+        });
+      }
+      
+      setAvailableSlots(filteredSlots);
       setSelectedSlot(''); // Reset selected slot when date changes
     } catch (slotsError: any) {
       console.error('Failed to load available slots:', slotsError);
@@ -100,7 +120,16 @@ export default function TenantBookingPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!selectedSlot || !property) {
+    if (!selectedSlot || !property || !selectedDate) {
+      return;
+    }
+
+    // Validate that the selected date/time is not in the past
+    const selectedDateTime = new Date(`${selectedDate}T${selectedSlot}`);
+    const now = new Date();
+    
+    if (selectedDateTime <= now) {
+      alert('Cannot book a viewing in the past. Please select a future date and time.');
       return;
     }
 
@@ -113,6 +142,7 @@ export default function TenantBookingPage() {
         tenant_phone: formData.phone,
         property_id: property.id,
         requested_time: selectedSlot,
+        requested_date: selectedDate || null,
         move_in_date: formData.moveInDate || null,
         occupants: formData.occupants ? parseInt(formData.occupants) : null,
         rent_budget: formData.rentBudget ? parseFloat(formData.rentBudget) : null,

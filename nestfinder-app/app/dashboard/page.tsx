@@ -46,7 +46,7 @@ export default function DashboardPage() {
               <h1 className="text-2xl font-bold text-slate-900">🏠 NestFinder</h1>
               <p className="text-sm text-slate-600">{agency?.name || 'Agency'}</p>
             </div>
-            
+
             {/* View Toggle */}
             <div className="flex gap-2 bg-slate-100 rounded-lg p-1">
               <button
